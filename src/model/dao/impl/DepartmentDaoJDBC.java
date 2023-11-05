@@ -14,7 +14,7 @@ import db.DB;
 import db.dbException;
 import model.dao.DepartmentDao;
 import model.entities.Department;
-import model.entities.Seller;
+
 
 public class DepartmentDaoJDBC implements DepartmentDao {
 
@@ -29,10 +29,9 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 		// TODO Auto-generated method stub
 		PreparedStatement st = null;
 		try {
-			st = conn.prepareStatement("INSERT INTO department " + "(Id,Name) "
-					+ "VALUES " + "(?, ?)", Statement.RETURN_GENERATED_KEYS);
-			st.setInt(1, obj.getId());
-			st.setString(2, obj.getName());
+			st = conn.prepareStatement("INSERT INTO department " + "(Name) "
+					+ "VALUES " + "(?)", Statement.RETURN_GENERATED_KEYS);
+			st.setString(1, obj.getName());
 			
 			int rowsAffected = st.executeUpdate();
 
@@ -68,6 +67,7 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 			
 			st.setInt(1, obj.getId());
 			st.setString(2, obj.getName());
+			st.setInt(3, obj.getId());
 			
 			st.executeUpdate();
 
@@ -114,17 +114,16 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		try {
-			st = conn.prepareStatement("SELECT department.Name AS DepName "
+			st = conn.prepareStatement("SELECT department.Id,department.Name AS DepName "
 					+ "FROM department "
 					+ "WHERE department.Id = ? ");
 			st.setInt(1, id);
 			rs = st.executeQuery();
 			
 			if(rs.next()) {
-				Department dep = instantiateDepartment(rs);
-				
-				Department obj = instantiateDepartment(rs);
-				return obj;	
+				Department dep = instantiateDepartment(rs);	
+
+				return dep;	
 			}
 			return null;
 			
@@ -141,7 +140,7 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
 	private Department instantiateDepartment(ResultSet rs) throws SQLException   {
 		Department dep = new Department();
-		dep.setId(rs.getInt("DepartmentId"));
+		dep.setId(rs.getInt("Id"));
 		dep.setName(rs.getString("DepName"));
 		return dep;
 	}
@@ -151,27 +150,17 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		try {
-			st = conn.prepareStatement("SELECT department.Name AS DepName " 
-					+ "FROM department " 
-					+ "ORDER BY department.Name");
-						
+			st = conn.prepareStatement(
+					"SELECT * FROM department ORDER BY Name");						
 			rs = st.executeQuery();
 			
 			List<Department> list = new ArrayList<>();
-			Map<Integer,Department > map = new HashMap<>();
-			
 			
 			while(rs.next()) {
-				Department dep = map.get(rs.getInt("DepartmentId"));
-				
-						if(dep == null) {
-							dep = instantiateDepartment(rs);
-							map.put(rs.getInt("DepartmentId"), dep);
-						}
-						
-				Department obj = instantiateDepartment(rs);
-				list.add(obj);
-						
+				Department obj = new Department();
+				obj.setId(rs.getInt("Id"));
+				obj.setName(rs.getString("Name"));
+				list.add(obj);			
 			}
 			return list;
 			
